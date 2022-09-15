@@ -181,24 +181,32 @@ WHERE dea.continent IS NOT NULL and new_vaccinations is not null)
 SELECT *, total_vaccination/population*100 AS vaccination_percentage
 FROM Popvsvac
 
---create view for data visualization later 
-CREATE VIEW
-percentPopulationVaccinated
+
+--create the first view using the above query 
+--the below table will contain continent, date,location, population,total vaccinations by location, and the vaccination percentage, new cases, deaths 
+--goal: trying to look at the how new_cases changed after population is exposed to vaccinations 
+-- addtional objective look at geographical factor impact on cases 
+
+CREATE VIEW 
+Covid_19_vaccination_new_cases
 AS 
 SELECT 
 dea.continent,
 dea.date,
 dea.location,
+CAST(dea.total_deaths as float) as total_death,
+CAST(dea.new_deaths AS float) AS new_death,
 dea.population,
 vac.new_vaccinations,
-SUM(CAST(vac.new_vaccinations as float)) OVER(partition by vac.location ORDER BY dea.location,dea.date) as rolling_vaccination
+SUM(CAST(vac.new_vaccinations as float)) OVER(partition by vac.location ORDER BY dea.location,dea.date) as total_vaccination,
+SUM(CAST(vac.new_vaccinations as float)) OVER(partition by vac.location ORDER BY dea.location,dea.date)/population*100 AS vaccination_percentage,
+dea.new_cases,
+dea.total_cases
 FROM data_analyst_project..covid_death_data as dea
 inner join 
 data_analyst_project..covid_vaccinations as vac
 ON dea.location=vac.location
 and dea.date=vac.date
 WHERE dea.continent IS NOT NULL and new_vaccinations is not null
-
-
 
 
