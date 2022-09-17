@@ -210,3 +210,32 @@ and dea.date=vac.date
 WHERE dea.continent IS NOT NULL and new_vaccinations is not null
 
 
+
+
+--I want to create a table with rolling total vaccinations for each day for the world along with new cases for the world, 
+--this turned out to be more diffcult than expected 
+--because the there are many row of data with the same data 
+-- I tried to sum total_vaccination and group by the date 
+--anyway let me take a look at the data first 
+
+
+
+
+
+
+SELECT vac.date,
+max(CAST(total_vaccinations AS float)) as total_vaccination,--the total vaccination for the whole world each day all values were the same, used max to pick one
+CAST(new_vaccinations as float) as new_vaccination, --converting to float data type 
+
+sum(total_cases) as total_cases,--summing all total cases for the same day 
+sum(new_cases) as new_cases--same idea, summing all new cases for the same day 
+
+FROM data_analyst_project..covid_vaccinations as vac inner join 
+data_analyst_project..covid_death_data as dea 
+on vac.date=dea.date
+--joinging the two tables I had by matching the date 
+WHERE vac.location ='world' and total_vaccinations is not null --I want to look at cases for the world and want no null values 
+GROUP BY vac.date,new_vaccinations
+order by vac.date, total_vaccination  asc
+
+
